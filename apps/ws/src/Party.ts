@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 import { Client, SocketManager } from "./SocketManager";
 import { randomUUID } from "crypto";
-import { CLIENT_JOINED, CLIENT_LEAVED, CURRENT, PAUSE, PLAY } from "./messages";
+import { CLIENT_JOINED, CLIENT_LEAVED, PAUSE, PLAY } from "./messages";
 
 export class Party {
   id: string;
@@ -9,6 +9,7 @@ export class Party {
   private clients: Client[];
   private videos: string[];
   private currentVideo: string | null;
+  private currentTimestamp: number;
 
   constructor(host: Client) {
     this.id = randomUUID();
@@ -16,6 +17,7 @@ export class Party {
     this.clients = [];
     this.videos = [];
     this.currentVideo = null;
+    this.currentTimestamp = 0;
   }
 
   addClient(client: Client) {
@@ -42,13 +44,29 @@ export class Party {
   }
 
   addVideo(video: string) {
-    this.videos.push(video);
+    if (!this.videos.includes(video)) {
+      this.videos.push(video);
+    } else {
+      throw new Error("Video Already Exists");
+    }
+  }
+
+  getCurrentVideo() {
+    return this.currentVideo;
+  }
+
+  getVideoQueue() {
+    return this.videos;
   }
 
   removeVideo(video: string) {
-    this.videos = this.videos.filter((v: string) => {
-      return v !== video;
-    });
+    if (this.videos.includes(video)) {
+      this.videos = this.videos.filter((v: string) => {
+        return v !== video;
+      });
+    } else {
+      throw new Error("Video Already Exists");
+    }
   }
 
   setCurrentVideo(video: string) {
@@ -56,15 +74,12 @@ export class Party {
   }
 
   getNextVideo() {
-    const nextVideo = this.videos.pop();
-    if (nextVideo) this.setCurrentVideo(nextVideo);
-  }
-
-  broadcastCurrent(client: Client) {
-    client.socket.emit(
-      "message",
-      JSON.stringify({ type: CURRENT, currentVideo: this.currentVideo })
-    );
+    if (this.videos.length !== 0) {
+      const nextVideo = this.videos.pop();
+      if (nextVideo) this.setCurrentVideo(nextVideo);
+    } else {
+      throw new Error("No More Videos in Queue");
+    }
   }
 
   play(timeStamp = 0) {
@@ -85,5 +100,13 @@ export class Party {
         type: PAUSE,
       })
     );
+  }
+
+  setCurrentTimestamp(timeStamp: number) {
+    this.currentTimestamp = timeStamp;
+  }
+
+  getCurrentTimestamp() {
+    return this.currentTimestamp;
   }
 }
