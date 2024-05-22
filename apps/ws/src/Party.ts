@@ -1,6 +1,7 @@
 import { WebSocket } from "ws";
 import { Client, SocketManager } from "./SocketManager";
 import { randomUUID } from "crypto";
+import { CLIENT_JOINED, CLIENT_LEAVED, CURRENT } from "./messages";
 
 export class Party {
   id: string;
@@ -19,6 +20,10 @@ export class Party {
 
   addClient(client: Client) {
     this.clients.push(client);
+    SocketManager.getInstance().broadcast(
+      this.id,
+      JSON.stringify({ type: CLIENT_JOINED, clientId: client.id })
+    );
     client.socket.emit("message", this.currentVideo);
   }
 
@@ -30,6 +35,10 @@ export class Party {
     }
     this.clients = this.clients.filter((client) => client.socket !== socket);
     SocketManager.getInstance().removeclient(client);
+    SocketManager.getInstance().broadcast(
+      this.id,
+      JSON.stringify({ type: CLIENT_LEAVED, clientId: client.id })
+    );
   }
 
   addVideo(video: string) {
@@ -49,5 +58,12 @@ export class Party {
   getNextVideo() {
     const nextVideo = this.videos.pop();
     if (nextVideo) this.setCurrentVideo(nextVideo);
+  }
+
+  broadcastCurrent(client: Client) {
+    client.socket.emit(
+      "message",
+      JSON.stringify({ type: CURRENT, currentVideo: this.currentVideo })
+    );
   }
 }

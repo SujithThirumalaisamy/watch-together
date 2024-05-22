@@ -1,0 +1,13 @@
+export const INIT_PARTY = "init_party";
+export const PARTY_CREATED = "party_created";
+export const JOIN_PARTY = "join_party";
+export const LEAVE_PARTY = "leave_party";
+export const CLIENT_JOINED = "client_joined";
+export const CLIENT_LEAVED = "client_leaved";
+export const PARTY_NOT_FOUND = "party_not_found";
+export const PLAY = "play";
+export const PAUSE = "pause";
+export const SEEK = "seek";
+export const CURRENT = "current";
+export const ADD_VIDEO = "add_video";
+export const REMOVE_VIDEO = "remove_video";

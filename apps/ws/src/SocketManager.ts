@@ -5,11 +5,13 @@ export class Client {
   public socket: WebSocket;
   public id: string;
   public clientId: string;
+  public partyId: string | null;
 
   constructor(socket: WebSocket, clientId: string) {
     this.socket = socket;
     this.clientId = clientId;
     this.id = randomUUID();
+    this.partyId = null;
   }
 }
 
