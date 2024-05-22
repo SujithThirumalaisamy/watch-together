@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Player from "./components/player";
+import Player from "./components/party/player";
 import Layout from "./components/layout";
-import PartyLayout from "./components/party-layout";
-import Landing from "./components/landing";
+import PartyLayout from "./components/party/party-layout";
+import Landing from "./components/landing/landing";
 function App() {
   return (
     <>

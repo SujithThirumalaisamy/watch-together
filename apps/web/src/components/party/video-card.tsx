@@ -1,5 +1,5 @@
-import ListIcon from "../list-icon";
-import TrashIcon from "../trash-icon";
+import ListIcon from "../icons/list-icon";
+import TrashIcon from "../icons/trash-icon";
 
 export default function VideoCard({ url }: { url: string }) {
   console.log(url);

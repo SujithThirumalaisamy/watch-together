@@ -1,4 +1,4 @@
-export default function ListIcon(props) {
+export default function ListIcon(props: { className: string }) {
   return (
     <svg
       {...props}

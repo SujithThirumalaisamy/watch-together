@@ -1,4 +1,4 @@
-import { VideosList } from "./party/videos-list";
+import { VideosList } from "./videos-list";
 
 export default function PartyLayout({ children }: { children: JSX.Element }) {
   return (

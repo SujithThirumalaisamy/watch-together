@@ -1,5 +1,3 @@
-import ListIcon from "../list-icon";
-import TrashIcon from "../trash-icon";
 import VideoCard from "./video-card";
 
 const videos = [

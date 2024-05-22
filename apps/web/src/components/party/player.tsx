@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import YouTube from "react-youtube";
 import { useToast } from "@ui/components/ui/use-toast";
-import UserAvatar from "./party/user-avatar";
+import UserAvatar from "./user-avatar";
 
 const users = [
   { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },

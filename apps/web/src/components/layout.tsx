@@ -1,3 +1,3 @@
 export default function Layout({ children }: { children: JSX.Element }) {
-  return <>{children}</>;
+  return <div className="h-full w-full">{children}</div>;
 }
