@@ -2,10 +2,12 @@ import { Link } from "react-router-dom";
 import SectionCreateJoin from "./sec-create-join";
 import SectionCreate from "./sec-create";
 import SectionFind from "./sec-find";
+import Header from "./header";
 
 export default function Landing() {
   return (
     <>
+      <Header />
       <main>
         <SectionCreateJoin />
         <SectionCreate />
