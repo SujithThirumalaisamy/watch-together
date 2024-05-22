@@ -8,9 +8,13 @@
   },
   "devDependencies": {
     "eslint": "^8.57.0",
-    "@repo/eslint-config": "workspace:*",
+    "@repo/eslint-config": "*",
     "prettier": "^3.2.5",
     "turbo": "latest"
   },
-  "packageManager": "pnpm@8.9.0"
+  "packageManager": "yarn@1.22.22",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
