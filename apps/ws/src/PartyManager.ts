@@ -20,7 +20,7 @@ import {
   VIDEO_ALREADY_EXIST,
   VIDEO_DOES_NOT_EXIST,
   VIDEO_QUEUE,
-} from "./messages";
+} from "@repo/common/messages";
 export class PartyManager {
   private parties: Party[];
   private clients: Client[];

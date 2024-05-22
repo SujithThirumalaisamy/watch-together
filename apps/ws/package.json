@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/ws": "^8.5.10",
+    "@repo/common": "*",
     "ws": "^8.17.0"
   }
 }

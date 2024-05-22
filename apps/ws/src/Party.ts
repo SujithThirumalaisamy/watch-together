@@ -1,7 +1,12 @@
 import { WebSocket } from "ws";
 import { Client, SocketManager } from "./SocketManager";
 import { randomUUID } from "crypto";
-import { CLIENT_JOINED, CLIENT_LEAVED, PAUSE, PLAY } from "./messages";
+import {
+  CLIENT_JOINED,
+  CLIENT_LEAVED,
+  PAUSE,
+  PLAY,
+} from "@repo/common/messages";
 
 export class Party {
   id: string;
