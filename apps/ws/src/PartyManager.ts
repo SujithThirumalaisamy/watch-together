@@ -1,7 +1,18 @@
 import { Party } from "./Party";
 import { Client, SocketManager } from "./SocketManager";
 import { WebSocket } from "ws";
-import { INIT_PARTY, JOIN_PARTY, LEAVE_PARTY, PARTY_CREATED } from "./messages";
+import {
+  ADD_VIDEO,
+  INIT_PARTY,
+  JOIN_PARTY,
+  LEAVE_PARTY,
+  PARTY_CREATED,
+  PARTY_NOT_FOUND,
+  PAUSE,
+  PLAY,
+  REMOVE_VIDEO,
+  SEEK,
+} from "./messages";
 export class PartyManager {
   private parties: Party[];
   private clients: Client[];
@@ -28,6 +39,7 @@ export class PartyManager {
     this.clients = this.clients.filter((client) => client.socket !== socket);
     SocketManager.getInstance().removeclient(client);
   }
+
   private addHandler(client: Client) {
     client.socket.on("message", async (data) => {
       const message = JSON.parse(data.toString());
@@ -44,15 +56,71 @@ export class PartyManager {
         }
         case JOIN_PARTY: {
           const party = this.parties.find(({ id }) => id === message.partyId);
-          party?.addClient(client);
-          party?.broadcastCurrent(client);
+          if (!party) {
+            return client.socket.send(
+              JSON.stringify({ type: PARTY_NOT_FOUND })
+            );
+          }
+          party.addClient(client);
+          party.broadcastCurrent(client);
           break;
         }
         case LEAVE_PARTY: {
           const party = this.parties.find(
             (party) => party.id === client.partyId
           );
+          SocketManager.getInstance().removeclient(client);
           party?.removeClient(client.socket);
+          break;
+        }
+        case PLAY: {
+          const party = this.parties.find(
+            (party) => party.id === client.partyId
+          );
+          if (!party) break;
+          party.play(message.timeStamp);
+          break;
+        }
+        case PAUSE: {
+          const party = this.parties.find(
+            (party) => party.id === client.partyId
+          );
+          if (!party) break;
+          party.pause();
+          break;
+        }
+        case ADD_VIDEO: {
+          const party = this.parties.find(
+            (party) => party.id === client.partyId
+          );
+          if (!party) break;
+          party.addVideo(message.videoURL);
+          break;
+        }
+        case REMOVE_VIDEO: {
+          const party = this.parties.find(
+            (party) => party.id === client.partyId
+          );
+          if (!party) break;
+          party.removeVideo(message.videoURL);
+          break;
+        }
+        case SEEK: {
+          const party = this.parties.find(
+            (party) => party.id === client.partyId
+          );
+          if (!party) {
+            return client.socket.send(
+              JSON.stringify({ type: PARTY_NOT_FOUND })
+            );
+          }
+          SocketManager.getInstance().broadcast(
+            party.id,
+            JSON.stringify({
+              type: SEEK,
+              timeStamp: message.timeStamp,
+            })
+          );
         }
       }
     });

@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
 import { Client, SocketManager } from "./SocketManager";
 import { randomUUID } from "crypto";
-import { CLIENT_JOINED, CLIENT_LEAVED, CURRENT } from "./messages";
+import { CLIENT_JOINED, CLIENT_LEAVED, CURRENT, PAUSE, PLAY } from "./messages";
 
 export class Party {
   id: string;
@@ -64,6 +64,26 @@ export class Party {
     client.socket.emit(
       "message",
       JSON.stringify({ type: CURRENT, currentVideo: this.currentVideo })
+    );
+  }
+
+  play(timeStamp = 0) {
+    SocketManager.getInstance().broadcast(
+      this.id,
+      JSON.stringify({
+        type: PLAY,
+        currentVideo: this.currentVideo,
+        timeStamp,
+      })
+    );
+  }
+
+  pause() {
+    SocketManager.getInstance().broadcast(
+      this.id,
+      JSON.stringify({
+        type: PAUSE,
+      })
     );
   }
 }
