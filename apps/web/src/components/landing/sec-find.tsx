@@ -19,7 +19,7 @@ export default function SectionFind() {
             alt="Join Party"
             className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
             height="310"
-            src="/placeholder.svg"
+            src="https://img.freepik.com/free-photo/four-happy-men-holding-beer-mugs-gesturing_171337-13696.jpg?t=st=1716498203~exp=1716501803~hmac=fa8b9e348c7c9552d0cb73aa88b15b8552cac7f94b5ac517209355bde43c0495&w=1380"
             width="550"
           />
           <div className="flex flex-col justify-center space-y-4">

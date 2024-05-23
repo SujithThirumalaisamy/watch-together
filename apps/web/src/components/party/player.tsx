@@ -1,22 +1,22 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import YouTube from "react-youtube";
-import { useToast } from "@ui/components/ui/use-toast";
 import UserAvatar from "./user-avatar";
+import { useWebSocket } from "../providers/wsContext";
 
 const users = [
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
-  { url: "/placeholder.svg", username: "Sujith Thirumalaisamy" },
+  { url: "/placeholder.svg", username: "Sujith Thirumalaisam" },
+  { url: "/placeholder.svg", username: "Sujith Thirumalaisa" },
+  { url: "/placeholder.svg", username: "Sujith Thirumalais" },
+  { url: "/placeholder.svg", username: "Sujith Thirumalai" },
+  { url: "/placeholder.svg", username: "Sujith Thirumala" },
+  { url: "/placeholder.svg", username: "Sujith Thirumal" },
+  { url: "/placeholder.svg", username: "Sujith Thiruma" },
+  { url: "/placeholder.svg", username: "Sujith Thirum" },
+  { url: "/placeholder.svg", username: "Sujith Thiru" },
+  { url: "/placeholder.svg", username: "Sujith Thir" },
+  { url: "/placeholder.svg", username: "Sujith Thi" },
+  { url: "/placeholder.svg", username: "Sujith Th" },
+  { url: "/placeholder.svg", username: "Sujith T" },
 ];
 
 export default function Player() {
@@ -27,6 +27,21 @@ export default function Player() {
     iframeClassName: "player-container",
     title: "",
   });
+  useEffect(() => {
+    const getMetaData = async () => {
+      const metadata = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${youtubePlayerConfig.videoId}&key=${import.meta.env.VITE_YOUTUBE_API_KEY}`
+      );
+      const response = await metadata.json();
+      setYoutubePlayerConfig((prev) => {
+        return {
+          ...prev,
+          title: response.items[0]?.snippet.title,
+        };
+      });
+    };
+    getMetaData();
+  }, []);
   const youtubePlayerOpts = {};
   const youtubePlayerStyle = {};
   const onReady = () => {};
@@ -38,26 +53,24 @@ export default function Player() {
   const onPlaybackRateChange = () => {};
   const onPlaybackQualityChange = () => {};
 
-  const webSocketRef = useRef<null | WebSocket>(null);
-  const { toast } = useToast();
+  const socket = useWebSocket();
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080");
-    if (!ws) return;
-    ws.addEventListener("open", () => {
-      toast({
-        title: "Connected!",
-        description: "WebSocket server connected sucessfully",
-      });
-      console.log("Connected to WS Successfully");
+    if (!socket?.socket.onmessage) return;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    socket.socket.onopen(() => {
+      console.log("Open");
     });
-    ws.addEventListener("message", (event) => {
-      console.log("Message from server ", event.data);
+    socket?.socket.onmessage((event) => {
+      console.log(event.data);
+      return event.data;
     });
-    webSocketRef.current = ws;
-    return () => {
-      webSocketRef.current?.close();
-    };
-  }, []);
+  }, [socket]);
+  // const { toast } = useToast();
+  // toast({
+  //   title: "Connected!",
+  //   description: "WebSocket server connected sucessfully",
+  // });
   return (
     <div className="flex flex-col w-3/4 p-8">
       <YouTube
@@ -81,7 +94,7 @@ export default function Player() {
       <div className="flex items-center space-x-2 mt-2">
         <UserAvatar username="ST" url="/placeholder.svg" />
         <h2 className="text-xl font-semibold text-white">
-          This is the title of the video
+          {youtubePlayerConfig.title}
         </h2>
       </div>
       <div className="flex items-center mt-2 space-x-2">

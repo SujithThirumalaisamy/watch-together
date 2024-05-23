@@ -1,17 +1,41 @@
-import { randomUUID } from "crypto";
-import { WebSocket } from "ws";
-
+import { WebSocket as ws } from "ws";
+import db from "@repo/db/src";
 export class Client {
-  public socket: WebSocket;
+  public socket: ws;
   public id: string;
   public clientId: string;
   public partyId: string | null;
-
-  constructor(socket: WebSocket, clientId: string) {
+  constructor(socket: ws, clientId: string) {
+    this.id = "";
     this.socket = socket;
     this.clientId = clientId;
-    this.id = randomUUID();
     this.partyId = null;
+    db.partyClient
+      .findFirst({
+        where: {
+          clientId,
+        },
+      })
+      .then((client) => {
+        if (client) {
+          this.id = client.id;
+          this.clientId = client.clientId;
+        } else {
+          db.partyClient
+            .create({
+              data: {
+                clientId,
+              },
+            })
+            .then((client) => {
+              this.id = client.id;
+              this.clientId = clientId;
+            })
+            .catch(() => {
+              throw new Error("Internal Error!");
+            });
+        }
+      });
   }
 }
 

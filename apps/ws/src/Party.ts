@@ -1,4 +1,4 @@
-import { WebSocket } from "ws";
+import { WebSocket as ws } from "ws";
 import { Client, SocketManager } from "./SocketManager";
 import { randomUUID } from "crypto";
 import {
@@ -34,7 +34,7 @@ export class Party {
     client.socket.emit("message", this.currentVideo);
   }
 
-  removeClient(socket: WebSocket) {
+  removeClient(socket: ws) {
     const client = this.clients.find((client) => client.socket === socket);
     if (!client) {
       console.error("client not found?");

@@ -24,9 +24,9 @@ export default function SectionCreate() {
           <img
             alt="Create Party"
             className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full lg:order-last"
-            height="310"
-            src="/placeholder.svg"
-            width="550"
+            height="3910"
+            src="https://img.freepik.com/free-photo/carefree-young-adults-enjoy-nightlife-multi-ethnic-entertainment-club-generated-by-ai_24640-92977.jpg?t=st=1716498061~exp=1716501661~hmac=af262229e524f17aa0f76d92eeb3561de07bbce60fa3c8102db56dcecebd9b0f"
+            width="950"
           />
         </div>
       </div>

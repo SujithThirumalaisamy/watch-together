@@ -1,6 +1,6 @@
 import { Party } from "./Party";
 import { Client, SocketManager } from "./SocketManager";
-import { WebSocket } from "ws";
+import { WebSocket as ws } from "ws";
 import {
   ADD_VIDEO,
   ALREADY_IN_PARTY,
@@ -38,7 +38,7 @@ export class PartyManager {
     this.addHandler(client);
   }
 
-  removeClient(socket: WebSocket) {
+  removeClient(socket: ws) {
     const client = this.clients.find((client) => client.socket === socket);
     if (!client) {
       console.error("Client not found!");
@@ -51,6 +51,7 @@ export class PartyManager {
   private addHandler(client: Client) {
     client.socket.on("message", async (data) => {
       const message = JSON.parse(data.toString());
+      console.log(message);
       switch (message.type) {
         case INIT_PARTY: {
           if (client.partyId) {
@@ -58,6 +59,7 @@ export class PartyManager {
               JSON.stringify({ type: ALREADY_IN_PARTY })
             );
           }
+          console.log("here");
           const party = new Party(client);
           this.parties.push(party);
           client.partyId = party.id;

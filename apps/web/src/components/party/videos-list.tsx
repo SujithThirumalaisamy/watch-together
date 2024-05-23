@@ -27,8 +27,8 @@ const videos = [
 export function VideosList() {
   return (
     <div className="space-y-3 py-8 max-h-screen scroll">
-      {videos.map((video) => {
-        return <VideoCard url={video.url} />;
+      {videos.map((video, index) => {
+        return <VideoCard url={video.url} key={video.url + index} />;
       })}
     </div>
   );

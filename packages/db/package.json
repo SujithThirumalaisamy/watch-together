@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "scripts": {
-    "dev": "npx prisma generate"
+  "exports": {
+    "./src": "./src/index.ts"
   },
   "dependencies": {
+    "@prisma/client": "^5.14.0",
     "prisma": "^5.14.0"
   }
 }
