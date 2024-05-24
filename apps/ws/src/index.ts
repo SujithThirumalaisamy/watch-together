@@ -9,7 +9,6 @@ const wss = new WebSocketServer({ port: 8080 });
 const partyManager = new PartyManager();
 
 wss.on("connection", async function connection(ws, req: IncomingMessage) {
-  console.log("NewConnection");
   //@ts-ignore
   const usersWithCount = await db.party.findMany({
     include: {
@@ -19,14 +18,9 @@ wss.on("connection", async function connection(ws, req: IncomingMessage) {
     },
   });
   const parties = await db.party.findMany();
-  console.log(parties);
   if (typeof req.url !== "string") return;
   const userId: string | string[] | undefined = url.parse(req.url, true).query
     .userId;
-
-  console.log("Working");
-  console.log(usersWithCount);
-
   try {
     if (typeof userId === "string") {
       partyManager.addClient(new Client(ws, userId));
