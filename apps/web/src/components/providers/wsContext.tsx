@@ -1,6 +1,7 @@
 import {
   ADD_VIDEO,
   GET_NEXT_VIDEO,
+  INIT_PARTY,
   JOIN_PARTY,
   LEAVE_PARTY,
   PAUSE,
@@ -12,6 +13,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 type WebSocketContextType = {
   socket: WebSocket;
+  createParty: CallableFunction;
   joinPary: CallableFunction;
   leaveParty: CallableFunction;
   playVideo: CallableFunction;
@@ -30,6 +32,12 @@ export const WebSocketProvider = ({
   children: React.ReactNode;
 }) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
+
+  function createParty(partyTitle: string, partyDescription: string) {
+    socket?.send(
+      JSON.stringify({ type: INIT_PARTY, partyTitle, partyDescription })
+    );
+  }
 
   function joinPary(partyId: string) {
     socket?.send(JSON.stringify({ type: JOIN_PARTY, partyId }));
@@ -91,6 +99,7 @@ export const WebSocketProvider = ({
       <WebSocketContext.Provider
         value={{
           socket,
+          createParty,
           joinPary,
           leaveParty,
           playVideo,

@@ -18,6 +18,7 @@ export class Client {
       })
       .then((client) => {
         if (client) {
+          console.log("Found Client in DB");
           this.id = client.id;
           this.clientId = client.clientId;
         } else {
