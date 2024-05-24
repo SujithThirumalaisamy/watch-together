@@ -1,42 +1,12 @@
 import { WebSocket as ws } from "ws";
-import db from "@repo/db/src";
 export class Client {
   public socket: ws;
   public id: string;
-  public clientId: string;
-  public partyId: string | null;
-  constructor(socket: ws, clientId: string) {
-    this.id = "";
+  public partyId: string;
+  constructor(socket: ws, userId: string) {
+    this.id = userId;
     this.socket = socket;
-    this.clientId = clientId;
-    this.partyId = null;
-    db.partyClient
-      .findFirst({
-        where: {
-          clientId,
-        },
-      })
-      .then((client) => {
-        if (client) {
-          console.log("Found Client in DB");
-          this.id = client.id;
-          this.clientId = client.clientId;
-        } else {
-          db.partyClient
-            .create({
-              data: {
-                clientId,
-              },
-            })
-            .then((client) => {
-              this.id = client.id;
-              this.clientId = clientId;
-            })
-            .catch(() => {
-              throw new Error("Internal Error!");
-            });
-        }
-      });
+    this.partyId = "";
   }
 }
 
@@ -54,7 +24,6 @@ export class SocketManager {
     if (this.instance) {
       return this.instance;
     }
-
     this.instance = new SocketManager();
     return this.instance;
   }
@@ -64,7 +33,7 @@ export class SocketManager {
       ...(this.interestedSockets.get(partyId) || []),
       client,
     ]);
-    this.clientPartyMapping.set(client.clientId, partyId);
+    this.clientPartyMapping.set(client.id, partyId);
   }
 
   broadcast(partyId: string, message: string) {
@@ -80,19 +49,17 @@ export class SocketManager {
   }
 
   removeclient(client: Client) {
-    const partyId = this.clientPartyMapping.get(client.clientId);
+    const partyId = this.clientPartyMapping.get(client.id);
     if (!partyId) {
       console.error("client was not interested in any party?");
       return;
     }
     const party = this.interestedSockets.get(partyId) || [];
-    const remainingclients = party.filter(
-      (u) => u.clientId !== client.clientId
-    );
+    const remainingclients = party.filter((u) => u.id !== client.id);
     this.interestedSockets.set(partyId, remainingclients);
     if (this.interestedSockets.get(partyId)?.length === 0) {
       this.interestedSockets.delete(partyId);
     }
-    this.clientPartyMapping.delete(client.clientId);
+    this.clientPartyMapping.delete(client.id);
   }
 }

@@ -10,9 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/ws": "^8.5.10",
     "@repo/common": "*",
     "@repo/db": "*",
+    "@types/ws": "^8.5.10",
+    "jsonwebtoken": "^9.0.2",
     "ws": "^8.17.0"
   }
 }
