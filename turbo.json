@@ -10,5 +10,20 @@
       "cache": false,
       "persistent": true
     }
-  }
+  },
+  "globalDependencies": [".env"],
+  "globalEnv": [
+    "AUTH_REDIRECT_URL",
+    "VITE_YOUTUBE_API_KEY",
+    "VITE_APP_BACKEND_URL",
+    "VITE_APP_WS_URL",
+    "JWT_SECRET",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GITHUB_CLIENT_ID",
+    "GITHUB_CLIENT_SECRET",
+    "JWT_SECRET",
+    "ALLOWED_HOSTS",
+    "AUTH_REDIRECT_URL"
+  ]
 }

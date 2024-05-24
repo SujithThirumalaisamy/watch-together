@@ -10,6 +10,7 @@ import {
   SEEK,
 } from "@repo/common/messages";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useUser } from "./user-provider";
 
 type WebSocketContextType = {
   socket: WebSocket;
@@ -32,6 +33,7 @@ export const WebSocketProvider = ({
   children: React.ReactNode;
 }) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const user = useUser();
 
   function createParty(partyTitle: string, partyDescription: string) {
     socket?.send(
@@ -73,7 +75,7 @@ export const WebSocketProvider = ({
 
   useEffect(() => {
     const ws: WebSocket = new WebSocket(
-      "ws://localhost:8080?userId=sujiththiru"
+      import.meta.env.VITE_APP_WS_URL + "?userId=" + user.name
     );
     setSocket(ws);
 

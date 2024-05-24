@@ -47,7 +47,7 @@ router.get("/logout", (req: Request, res: Response) => {
     } else {
       res.clearCookie("jwt");
       res.clearCookie("connect.sid");
-      res.redirect("http://localhost:5173/");
+      res.redirect(process.env.AUTH_REDIRECT_URL || "http://localhost:5173/");
     }
   });
 });
