@@ -4,8 +4,7 @@ import jwt from "jsonwebtoken";
 import db from "@repo/db/src";
 const router = Router();
 
-const CLIENT_URL =
-  process.env.AUTH_REDIRECT_URL ?? "http://localhost:5173/game/random";
+const CLIENT_URL = process.env.AUTH_REDIRECT_URL ?? "http://localhost:5173";
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
 interface User {
@@ -73,19 +72,6 @@ router.get(
 router.get(
   "/github/callback",
   passport.authenticate("github", {
-    successRedirect: CLIENT_URL,
-    failureRedirect: "/login/failed",
-  })
-);
-
-router.get(
-  "/facebook",
-  passport.authenticate("facebook", { scope: ["profile"] })
-);
-
-router.get(
-  "/facebook/callback",
-  passport.authenticate("facebook", {
     successRedirect: CLIENT_URL,
     failureRedirect: "/login/failed",
   })

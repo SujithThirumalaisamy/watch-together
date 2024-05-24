@@ -4,6 +4,7 @@ import Layout from "./components/layout";
 import PartyLayout from "./components/party/party-layout";
 import Landing from "./components/landing/landing";
 import { WebSocketProvider } from "./components/providers/wsContext";
+import Login from "./components/auth/login";
 function App() {
   return (
     <>
@@ -15,6 +16,7 @@ function App() {
               path="/party/:partyId"
               element={<PartyLayout children={<Player />} />}
             />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </WebSocketProvider>
       </BrowserRouter>
