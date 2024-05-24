@@ -5,7 +5,9 @@ import PartyLayout from "./components/party/party-layout";
 import Landing from "./components/landing/landing";
 import { WebSocketProvider } from "./components/providers/wsContext";
 import Login from "./components/auth/login";
+import { useUser } from "./components/providers/user-provider";
 function App() {
+  const user = useUser();
   return (
     <>
       <BrowserRouter>

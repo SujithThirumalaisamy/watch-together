@@ -51,7 +51,6 @@ export class PartyManager {
   private addHandler(client: Client) {
     client.socket.on("message", async (data) => {
       const message = JSON.parse(data.toString());
-      console.log(message);
       switch (message.type) {
         case INIT_PARTY: {
           if (client.partyId) {
@@ -59,7 +58,6 @@ export class PartyManager {
               JSON.stringify({ type: ALREADY_IN_PARTY })
             );
           }
-          console.log("here");
           const party = new Party(client);
           this.parties.push(party);
           client.partyId = party.id;

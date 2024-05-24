@@ -1,0 +1,30 @@
+{
+  "id": "115389905481057233032",
+  "displayName": "Sujith_Fraidy",
+  "name": { "familyName": "undefined", "givenName": "Sujith_Fraidy" },
+  "emails": [{ "value": "sujithmasi1267@gmail.com", "verified": true }],
+  "photos": [
+    {
+      "value": "https://lh3.googleusercontent.com/a/ACg8ocIIXs8bhOkp2K0AiElUrRJIvU5S_D2CjOFEBV5k49TKZNheMu5e=s96-c"
+    }
+  ],
+  "provider": "google",
+  "_raw": {
+    "sub": "115389905481057233032",
+    "name": "Sujith_Fraidy",
+    "given_name": "Sujith_Fraidy",
+    "picture": "https://lh3.googleusercontent.com/a/ACg8ocIIXs8bhOkp2K0AiElUrRJIvU5S_D2CjOFEBV5k49TKZNheMu5e\\u003ds96-c",
+    "email": "sujithmasi1267@gmail.com",
+    "email_verified": true,
+    "locale": "en-GB"
+  },
+  "_json": {
+    "sub": "115389905481057233032",
+    "name": "Sujith_Fraidy",
+    "given_name": "Sujith_Fraidy",
+    "picture": "https://lh3.googleusercontent.com/a/ACg8ocIIXs8bhOkp2K0AiElUrRJIvU5S_D2CjOFEBV5k49TKZNheMu5e=s96-c",
+    "email": "sujithmasi1267@gmail.com",
+    "email_verified": true,
+    "locale": "en-GB"
+  }
+}

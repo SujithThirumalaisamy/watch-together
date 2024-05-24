@@ -25,6 +25,7 @@ model PartyClient {
   username  String?      @unique
   name      String?
   email     String       @unique
+  avatarUrl String?
   provider  AuthProvider
   password  String?
   partyId   String?

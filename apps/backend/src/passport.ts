@@ -50,10 +50,12 @@ export function initPassport() {
           create: {
             email: profile.emails[0].value,
             name: profile.displayName,
+            avatarUrl: profile.photos[0].value,
             provider: "GOOGLE",
           },
           update: {
             name: profile.displayName,
+            avatarUrl: profile.photos[0].value,
           },
           where: {
             email: profile.emails[0].value,

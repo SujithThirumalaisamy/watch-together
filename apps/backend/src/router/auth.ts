@@ -23,12 +23,12 @@ router.get("/refresh", async (req: Request, res: Response) => {
         id: user.id,
       },
     });
-
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
     res.json({
       token,
       id: user.id,
       name: userDb?.name,
+      avatarUrl: userDb?.avatarUrl || "",
     });
   } else {
     res.status(401).json({ success: false, message: "Unauthorized" });
@@ -46,6 +46,7 @@ router.get("/logout", (req: Request, res: Response) => {
       res.status(500).json({ error: "Failed to log out" });
     } else {
       res.clearCookie("jwt");
+      res.clearCookie("connect.sid");
       res.redirect("http://localhost:5173/");
     }
   });

@@ -9,7 +9,11 @@ export default function UserAvatar({
 }) {
   return (
     <Avatar>
-      <AvatarImage alt="Host Avatar" src={`${url}?height=40&width=40`} />
+      <AvatarImage
+        alt="Host Avatar"
+        src={`${url}?height=40&width=40`}
+        referrerPolicy="no-referrer"
+      />
       <AvatarFallback>
         {username
           .split(" ")

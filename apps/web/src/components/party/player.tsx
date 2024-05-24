@@ -62,7 +62,6 @@ export default function Player() {
       console.log("Open");
     });
     socket?.socket.onmessage((event) => {
-      console.log(event.data);
       return event.data;
     });
   }, [socket]);
