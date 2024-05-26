@@ -7,6 +7,9 @@ import {
   PAUSE,
   PLAY,
 } from "@repo/common/messages";
+import db from "@repo/db/src";
+import { Party as PartyType } from "@prisma/client";
+import { getYoutubeVideoMetadata } from "./utils";
 
 export class Party {
   id: string;
@@ -16,7 +19,18 @@ export class Party {
   private currentVideo: string | null;
   private currentTimestamp: number;
 
-  constructor(host: Client) {
+  constructor(host: Client, partyMetaData: Omit<PartyType, "id" | "hostId">) {
+    db.party
+      .create({
+        data: {
+          description: partyMetaData.description,
+          hostId: host.id,
+          title: partyMetaData.title,
+        },
+      })
+      .then((data) => {
+        console.log(data);
+      });
     this.id = randomUUID();
     this.host = host;
     this.clients = [];
@@ -27,6 +41,11 @@ export class Party {
 
   addClient(client: Client) {
     this.clients.push(client);
+    // [Feature]: Add logic to make Host User as host when Rejoin
+    db.partyClient.update({
+      where: { id: client.id },
+      data: { partyId: this.id },
+    });
     SocketManager.getInstance().broadcast(
       this.id,
       JSON.stringify({ type: CLIENT_JOINED, clientId: client.id })
@@ -41,6 +60,10 @@ export class Party {
       return;
     }
     this.clients = this.clients.filter((client) => client.socket !== socket);
+    db.partyClient.update({
+      where: { id: client.id },
+      data: { partyId: null },
+    });
     SocketManager.getInstance().removeclient(client);
     SocketManager.getInstance().broadcast(
       this.id,
@@ -48,9 +71,36 @@ export class Party {
     );
   }
 
-  addVideo(video: string) {
+  async addVideo(video: string) {
+    console.log(video);
+    const videoId = new URL(video).searchParams.get("v");
+    if (!videoId) return;
+    const { duration, thumbnailURL, title } =
+      await getYoutubeVideoMetadata(videoId);
     if (!this.videos.includes(video)) {
+      await db.party.update({
+        where: { id: this.id },
+        data: {
+          videos: {
+            create: {
+              duration: parseInt(duration),
+              title,
+              url: video,
+              thumbnailURL,
+            },
+          },
+        },
+      });
       this.videos.push(video);
+      SocketManager.getInstance().broadcast(
+        this.id,
+        JSON.stringify({
+          duration: parseInt(duration),
+          title,
+          url: video,
+          thumbnailURL,
+        })
+      );
     } else {
       throw new Error("Video Already Exists");
     }

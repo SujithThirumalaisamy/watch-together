@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import UserAvatar from "./user-avatar";
 import { useUser } from "../providers/user-provider";
 import ReactPlayer from "react-player";
+import { useRecoilValue } from "recoil";
+import { clientAtom, playerAtom } from "../../store/atoms";
+import { useWebSocket } from "../providers/wsContext";
+import { getYoutubeVideoTitle } from "../../store/utils";
 
 const users = [
   { url: "/placeholder.svg", username: "Sujith Thirumalaisam" },
@@ -21,69 +25,98 @@ const users = [
 
 export default function Player() {
   const [youtubePlayerConfig, setYoutubePlayerConfig] = useState({
-    videoId: "Op8CXz0IRqE",
-    id: "Op8CXz0IRqE",
-    className: "player",
-    iframeClassName: "player-container",
+    videoId: "",
+    id: "",
     title: "",
   });
   const user = useUser();
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const playerState = useRecoilValue(playerAtom);
+  const { isHost } = useRecoilValue(clientAtom);
+  const socket = useWebSocket();
 
   useEffect(() => {
     const getMetaData = async () => {
-      const metadata = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${youtubePlayerConfig.videoId}&key=${import.meta.env.VITE_YOUTUBE_API_KEY}`
-      );
-      const response = await metadata.json();
+      const metadata = await getYoutubeVideoTitle(youtubePlayerConfig.videoId);
       setYoutubePlayerConfig((prev) => {
         return {
           ...prev,
-          title: response.items[0]?.snippet.title,
+          title: metadata.videoTitle,
         };
       });
     };
     getMetaData();
   }, [youtubePlayerConfig.videoId]);
-  const youtubePlayerStyle = {};
+  const youtubePlayerStyle = {
+    border: "15px",
+    overflow: "hidden",
+    aspectRatio: "16/9",
+  };
 
-  const handleClick = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const handleOnPlay = () => {
+    if (playerState.isPlaying) {
+      socket?.pauseVideo();
+    } else {
+      socket?.playVideo();
+    }
   };
 
   return (
-    <div className="flex flex-col w-3/4 p-8" onClick={(e) => handleClick(e)}>
-      <ReactPlayer
-        url={`https://www.youtube.com/watch?v=${youtubePlayerConfig.videoId}`}
-        controls={false}
-        style={youtubePlayerStyle}
-        config={{
-          youtube: {
-            playerVars: { disablekb: 1 },
-          },
-        }}
-        playing={isPlaying}
-      />
-      <div className="flex items-center space-x-2 mt-2">
-        <UserAvatar username="ST" url={user.avatarUrl} />
-        <h2 className="text-xl font-semibold text-white">
-          {youtubePlayerConfig.title}
-        </h2>
-      </div>
-      <div className="flex items-center mt-2 space-x-2">
-        {users.slice(0, 8).map((user) => {
-          return (
-            <UserAvatar
-              username={user.username}
-              url={user.url}
-              key={user.username}
+    <div className="player-container">
+      <div className="flex flex-col w-full">
+        <div className="relative">
+          {!isHost ? (
+            <div
+              className="w-full"
+              style={{
+                position: "absolute",
+                top: 0,
+                bottom: 0,
+                right: 0,
+                left: 0,
+                zIndex: 1000,
+                width: "90%",
+              }}
+            ></div>
+          ) : null}
+          {youtubePlayerConfig.videoId === "" ? (
+            <img src="/no-videos.jpg" width={"90%"} height={"auto"} />
+          ) : (
+            <ReactPlayer
+              width={"90%"}
+              height={"auto"}
+              url={`https://www.youtube.com/watch?v=${youtubePlayerConfig.videoId}`}
+              controls={false}
+              style={youtubePlayerStyle}
+              config={{
+                youtube: {
+                  playerVars: { disablekb: 1 },
+                },
+              }}
+              onPlay={handleOnPlay}
+              playing={playerState.isPlaying}
             />
-          );
-        })}
-        {users.length - 8 > 0 && (
-          <span className="text-white">{users.length - 8}+ Peoples</span>
-        )}
+          )}
+        </div>
+        <div className="flex items-center space-x-2 mt-2">
+          <UserAvatar username="ST" url={user.avatarUrl} />
+          <h2 className="text-xl font-semibold text-white">
+            {youtubePlayerConfig.title}
+          </h2>
+        </div>
+        <div className="flex items-center mt-2 space-x-2">
+          {users.slice(0, 8).map((user) => {
+            return (
+              <UserAvatar
+                username={user.username}
+                url={user.url}
+                key={user.username}
+              />
+            );
+          })}
+          {users.length - 8 > 0 && (
+            <span className="text-white">{users.length - 8}+ Peoples</span>
+          )}
+        </div>
       </div>
     </div>
   );

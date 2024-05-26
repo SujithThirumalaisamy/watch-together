@@ -1,35 +1,17 @@
+import { useRecoilValue } from "recoil";
+import AddVideo from "./add-video";
 import VideoCard from "./video-card";
-
-const videos = [
-  {
-    url: "https://www.youtube.com/watch?v=l5bRPWxun4A",
-  },
-  {
-    url: "https://www.youtube.com/watch?v=ypw5ZZ7BZDI",
-  },
-  {
-    url: "https://www.youtube.com/watch?v=qP7LzZqGh30",
-  },
-  {
-    url: "https://www.youtube.com/watch?v=D5CGlFQbgnk",
-  },
-  {
-    url: "https://www.youtube.com/watch?v=Wb6MmUa0bu0",
-  },
-  {
-    url: "https://www.youtube.com/watch?v=dbhurBoV9po",
-  },
-  {
-    url: "https://www.youtube.com/watch?v=NiP8OBpXCsY",
-  },
-];
+import { clientAtom, videoQueueAtom } from "../../store/atoms";
 
 export function VideosList() {
+  const videos = useRecoilValue(videoQueueAtom);
+  const client = useRecoilValue(clientAtom);
   return (
-    <div className="space-y-3 py-8 max-h-screen scroll">
+    <div className="space-y-3 py-8 max-h-screen scroll min-w-80">
       {videos.map((video, index) => {
         return <VideoCard url={video.url} key={video.url + index} />;
       })}
+      {client.isHost ? <AddVideo /> : null}
     </div>
   );
 }

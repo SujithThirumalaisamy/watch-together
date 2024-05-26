@@ -21,6 +21,7 @@ import {
   VIDEO_DOES_NOT_EXIST,
   VIDEO_QUEUE,
 } from "@repo/common/messages";
+import db from "@repo/db/src";
 export class PartyManager {
   private parties: Party[];
   private clients: Client[];
@@ -31,6 +32,7 @@ export class PartyManager {
 
   deleteParty(id: string) {
     this.parties = this.parties.filter((party) => party.id !== id);
+    db.party.delete({ where: { id } });
   }
 
   addClient(client: Client) {
@@ -58,7 +60,11 @@ export class PartyManager {
               JSON.stringify({ type: ALREADY_IN_PARTY })
             );
           }
-          const party = new Party(client);
+          const party = new Party(client, {
+            title: message.partyTitle,
+            description: message.partyDescription,
+            currentVideo: "",
+          });
           console.log(message);
           this.parties.push(party);
           client.partyId = party.id;

@@ -39,7 +39,17 @@ model Party {
   title        String
   description  String
   hostId       String
-  videos       String[]      @default([])
   currentVideo String        @default("")
   partyclients PartyClient[]
+  videos       Video[]
+}
+
+model Video {
+  id           String @unique @default(uuid())
+  title        String
+  duration     BigInt
+  url          String
+  thumbnailURL String
+  partyId      String
+  party        Party  @relation(fields: [partyId], references: [id])
 }

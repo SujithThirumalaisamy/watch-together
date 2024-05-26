@@ -1,5 +1,6 @@
 import {
   ADD_VIDEO,
+  CURRENT,
   GET_NEXT_VIDEO,
   INIT_PARTY,
   JOIN_PARTY,
@@ -9,11 +10,14 @@ import {
   PLAY,
   REMOVE_VIDEO,
   SEEK,
+  VIDEO_QUEUE,
 } from "@repo/common/messages";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useUser } from "./user-provider";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@ui/components/ui/use-toast";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { clientAtom, playerAtom, videoQueueAtom } from "../../store/atoms";
 
 type WebSocketContextType = {
   socket: WebSocket;
@@ -39,6 +43,9 @@ export const WebSocketProvider = ({
   const user = useUser();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const setHost = useSetRecoilState(clientAtom);
+  const setVideoQueue = useSetRecoilState(videoQueueAtom);
+  const [playerState, setPlayerState] = useRecoilState(playerAtom);
 
   function createParty(partyTitle: string, partyDescription: string) {
     socket?.send(
@@ -63,8 +70,9 @@ export const WebSocketProvider = ({
     socket?.send(JSON.stringify({ type: PAUSE }));
   }
 
-  function addVideo(videoId: string) {
-    socket?.send(JSON.stringify({ type: ADD_VIDEO, videoId }));
+  function addVideo(videoURL: string) {
+    setVideoQueue((prev) => [...prev, { url: videoURL }]);
+    socket?.send(JSON.stringify({ type: ADD_VIDEO, videoURL }));
   }
 
   function removeVideo(videoId: string) {
@@ -82,7 +90,7 @@ export const WebSocketProvider = ({
   useEffect(() => {
     if (user === null) return;
     const ws: WebSocket = new WebSocket(
-      import.meta.env.VITE_APP_WS_URL + "?userId=" + user.name
+      import.meta.env.VITE_APP_WS_URL + "?userId=" + user.id
     );
     setSocket(ws);
 
@@ -101,7 +109,21 @@ export const WebSocketProvider = ({
             title: "Party Created!",
             description: "New Watch Party Created Successfully",
           });
+          setHost((prev) => ({ ...prev, isHost: true }));
           navigate("/party/" + message.partyId);
+          break;
+        }
+        case PLAY: {
+          setPlayerState((prev) => ({ ...prev, isPlaying: true }));
+          break;
+        }
+        case CURRENT: {
+          console.log(message);
+          break;
+        }
+        case VIDEO_QUEUE: {
+          console.log(message);
+          break;
         }
       }
     };

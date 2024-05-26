@@ -13,6 +13,7 @@
     "@repo/common": "*",
     "@repo/db": "*",
     "@types/ws": "^8.5.10",
+    "dotenv": "^16.4.5",
     "jsonwebtoken": "^9.0.2",
     "ws": "^8.17.0"
   }

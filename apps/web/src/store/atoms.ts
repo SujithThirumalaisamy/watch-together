@@ -30,7 +30,6 @@ export const userAtom = atom<User>({
       } catch (e) {
         console.error(e);
       }
-
       return null;
     },
   }),
@@ -43,4 +42,23 @@ export const clientAtom = atom<ClientAtom>({
   default: {
     isHost: false,
   },
+});
+
+type PlayerAtom = { isPlaying: boolean; currentDuration: number };
+
+export const playerAtom = atom<PlayerAtom>({
+  key: "player",
+  default: {
+    isPlaying: false,
+    currentDuration: 0,
+  },
+});
+
+type Video = {
+  url: string;
+};
+
+export const videoQueueAtom = atom<Video[]>({
+  key: "videoqueue",
+  default: [],
 });
