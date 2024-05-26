@@ -47,10 +47,6 @@ export default function Player() {
   }, [youtubePlayerConfig.videoId]);
   const youtubePlayerStyle = {};
 
-  function handlePlayPause() {
-    console.log("Play");
-  }
-
   const handleClick = (e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -68,21 +64,6 @@ export default function Player() {
           },
         }}
         playing={isPlaying}
-        // videoId={youtubePlayerConfig.videoId}
-        // id={youtubePlayerConfig.id}
-        // className={youtubePlayerConfig.className}
-        // iframeClassName={youtubePlayerConfig.iframeClassName}
-        // title={youtubePlayerConfig.title}
-        // loading={"lazy"}
-        // opts={youtubePlayerOpts}
-        // onReady={onReady}
-        // onPlay={onPlay}
-        // onPause={onPause}
-        // onEnd={onEnd}
-        // onError={onError}
-        // onStateChange={onStateChange}
-        // onPlaybackRateChange={onPlaybackRateChange}
-        // onPlaybackQualityChange={onPlaybackQualityChange}
       />
       <div className="flex items-center space-x-2 mt-2">
         <UserAvatar username="ST" url={user.avatarUrl} />
