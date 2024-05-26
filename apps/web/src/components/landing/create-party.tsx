@@ -10,12 +10,14 @@ import {
 } from "@ui/components/ui/dialog";
 import { Input } from "@ui/components/ui/input";
 import { useState } from "react";
+import { useWebSocket } from "../providers/wsContext";
 
 export function CreateParty() {
   const [partyTitle, setpartyTitle] = useState("");
   const [partyDesc, setpartyDesc] = useState("");
-
+  const ws = useWebSocket();
   function handleCreateParty() {
+    ws?.createParty(partyTitle, partyDesc);
     console.log("Party Created!");
   }
 
@@ -45,7 +47,7 @@ export function CreateParty() {
             />
             <Input
               id="party-desc"
-              placeholder="Party ID"
+              placeholder="Party Description"
               className="col-span-4"
               value={partyDesc}
               onChange={(e) => setpartyDesc(e.target.value)}
@@ -55,7 +57,7 @@ export function CreateParty() {
         <DialogFooter>
           <Button
             variant={"outline"}
-            onChange={handleCreateParty}
+            onClick={handleCreateParty}
             className="inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus-visible:ring-gray-300"
           >
             Create

@@ -87,7 +87,16 @@ export class Party {
     }
   }
 
-  play(timeStamp = 0) {
+  play(host: Client, timeStamp = 0) {
+    if (this.host !== host) {
+      SocketManager.getInstance().broadcast(
+        this.id,
+        JSON.stringify({
+          type: PLAY,
+          message: "UnAuthorized",
+        })
+      );
+    }
     SocketManager.getInstance().broadcast(
       this.id,
       JSON.stringify({

@@ -4,6 +4,7 @@ import {
   INIT_PARTY,
   JOIN_PARTY,
   LEAVE_PARTY,
+  PARTY_CREATED,
   PAUSE,
   PLAY,
   REMOVE_VIDEO,
@@ -11,6 +12,8 @@ import {
 } from "@repo/common/messages";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useUser } from "./user-provider";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@ui/components/ui/use-toast";
 
 type WebSocketContextType = {
   socket: WebSocket;
@@ -34,11 +37,14 @@ export const WebSocketProvider = ({
 }) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const user = useUser();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   function createParty(partyTitle: string, partyDescription: string) {
     socket?.send(
       JSON.stringify({ type: INIT_PARTY, partyTitle, partyDescription })
     );
+    console.log("sent");
   }
 
   function joinPary(partyId: string) {
@@ -74,17 +80,30 @@ export const WebSocketProvider = ({
   }
 
   useEffect(() => {
+    if (user === null) return;
     const ws: WebSocket = new WebSocket(
       import.meta.env.VITE_APP_WS_URL + "?userId=" + user.name
     );
     setSocket(ws);
 
     ws.onopen = () => {
-      console.log("WebSocket connection opened");
+      toast({
+        title: "Connected!",
+        description: "WebSocket server connected sucessfully",
+      });
     };
 
-    ws.onmessage = (event) => {
-      console.log("Message from server:", event.data);
+    ws.onmessage = (event: MessageEvent) => {
+      const message = JSON.parse(event.data.toString());
+      switch (message.type) {
+        case PARTY_CREATED: {
+          toast({
+            title: "Party Created!",
+            description: "New Watch Party Created Successfully",
+          });
+          navigate("/party/" + message.partyId);
+        }
+      }
     };
 
     ws.onclose = () => {
@@ -94,7 +113,7 @@ export const WebSocketProvider = ({
     return () => {
       ws.close();
     };
-  }, []);
+  }, [user]);
 
   if (socket) {
     return (

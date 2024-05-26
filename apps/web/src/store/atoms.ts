@@ -35,3 +35,12 @@ export const userAtom = atom<User>({
     },
   }),
 });
+
+type ClientAtom = { isHost: boolean };
+
+export const clientAtom = atom<ClientAtom>({
+  key: "client",
+  default: {
+    isHost: false,
+  },
+});

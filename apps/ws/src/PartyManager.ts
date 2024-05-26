@@ -59,6 +59,7 @@ export class PartyManager {
             );
           }
           const party = new Party(client);
+          console.log(message);
           this.parties.push(party);
           client.partyId = party.id;
           SocketManager.getInstance().addClient(client, party.id);
@@ -104,7 +105,7 @@ export class PartyManager {
             (party) => party.id === client.partyId
           );
           if (!party) break;
-          party.play(message.timeStamp);
+          party.play(client, message.timeStamp);
           break;
         }
         case PAUSE: {

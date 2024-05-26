@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import YouTube from "react-youtube";
+import { useEffect, useRef, useState } from "react";
 import UserAvatar from "./user-avatar";
-import { useWebSocket } from "../providers/wsContext";
+import { useUser } from "../providers/user-provider";
+import ReactPlayer from "react-player";
 
 const users = [
   { url: "/placeholder.svg", username: "Sujith Thirumalaisam" },
@@ -27,6 +27,9 @@ export default function Player() {
     iframeClassName: "player-container",
     title: "",
   });
+  const user = useUser();
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+
   useEffect(() => {
     const getMetaData = async () => {
       const metadata = await fetch(
@@ -41,57 +44,48 @@ export default function Player() {
       });
     };
     getMetaData();
-  }, []);
-  const youtubePlayerOpts = {};
+  }, [youtubePlayerConfig.videoId]);
   const youtubePlayerStyle = {};
-  const onReady = () => {};
-  const onPlay = () => {};
-  const onPause = () => {};
-  const onEnd = () => {};
-  const onError = () => {};
-  const onStateChange = () => {};
-  const onPlaybackRateChange = () => {};
-  const onPlaybackQualityChange = () => {};
 
-  const socket = useWebSocket();
-  useEffect(() => {
-    if (!socket?.socket.onmessage) return;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    socket.socket.onopen(() => {
-      console.log("Open");
-    });
-    socket?.socket.onmessage((event) => {
-      return event.data;
-    });
-  }, [socket]);
-  // const { toast } = useToast();
-  // toast({
-  //   title: "Connected!",
-  //   description: "WebSocket server connected sucessfully",
-  // });
+  function handlePlayPause() {
+    console.log("Play");
+  }
+
+  const handleClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
   return (
-    <div className="flex flex-col w-3/4 p-8">
-      <YouTube
-        videoId={youtubePlayerConfig.videoId}
-        id={youtubePlayerConfig.id}
-        className={youtubePlayerConfig.className}
-        iframeClassName={youtubePlayerConfig.iframeClassName}
+    <div className="flex flex-col w-3/4 p-8" onClick={(e) => handleClick(e)}>
+      <ReactPlayer
+        url={`https://www.youtube.com/watch?v=${youtubePlayerConfig.videoId}`}
+        controls={false}
         style={youtubePlayerStyle}
-        title={youtubePlayerConfig.title}
-        loading={"lazy"}
-        opts={youtubePlayerOpts}
-        onReady={onReady}
-        onPlay={onPlay}
-        onPause={onPause}
-        onEnd={onEnd}
-        onError={onError}
-        onStateChange={onStateChange}
-        onPlaybackRateChange={onPlaybackRateChange}
-        onPlaybackQualityChange={onPlaybackQualityChange}
+        config={{
+          youtube: {
+            playerVars: { disablekb: 1 },
+          },
+        }}
+        playing={isPlaying}
+        // videoId={youtubePlayerConfig.videoId}
+        // id={youtubePlayerConfig.id}
+        // className={youtubePlayerConfig.className}
+        // iframeClassName={youtubePlayerConfig.iframeClassName}
+        // title={youtubePlayerConfig.title}
+        // loading={"lazy"}
+        // opts={youtubePlayerOpts}
+        // onReady={onReady}
+        // onPlay={onPlay}
+        // onPause={onPause}
+        // onEnd={onEnd}
+        // onError={onError}
+        // onStateChange={onStateChange}
+        // onPlaybackRateChange={onPlaybackRateChange}
+        // onPlaybackQualityChange={onPlaybackQualityChange}
       />
       <div className="flex items-center space-x-2 mt-2">
-        <UserAvatar username="ST" url="/placeholder.svg" />
+        <UserAvatar username="ST" url={user.avatarUrl} />
         <h2 className="text-xl font-semibold text-white">
           {youtubePlayerConfig.title}
         </h2>
