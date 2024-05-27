@@ -1,4 +1,3 @@
-import { Button } from "@ui/components";
 import {
   Card,
   CardContent,
@@ -6,8 +5,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@ui/components/ui/card";
-import { Input } from "@ui/components/ui/input";
+  Button,
+  Input,
+} from "@ui/components";
 import UsersIcon from "../icons/user-icon";
 
 export default function SectionFind() {

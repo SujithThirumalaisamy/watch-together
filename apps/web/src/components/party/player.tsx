@@ -2,10 +2,19 @@ import { useEffect, useState } from "react";
 import UserAvatar from "./user-avatar";
 import { useUser } from "../providers/user-provider";
 import ReactPlayer from "react-player";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { clientAtom, playerAtom } from "../../store/atoms";
 import { useWebSocket } from "../providers/wsContext";
 import { getYoutubeVideoTitle } from "../../store/utils";
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@ui/components";
+import { Share2Icon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const users = [
   { url: "/placeholder.svg", username: "Sujith Thirumalaisam" },
@@ -24,28 +33,36 @@ const users = [
 ];
 
 export default function Player() {
-  const [youtubePlayerConfig, setYoutubePlayerConfig] = useState({
-    videoId: "",
-    id: "",
-    title: "",
-  });
+  const [youtubePlayerConfig, setYoutubePlayerConfig] =
+    useRecoilState(playerAtom);
   const user = useUser();
   const playerState = useRecoilValue(playerAtom);
   const { isHost } = useRecoilValue(clientAtom);
   const socket = useWebSocket();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const getMetaData = async () => {
-      const metadata = await getYoutubeVideoTitle(youtubePlayerConfig.videoId);
-      setYoutubePlayerConfig((prev) => {
-        return {
-          ...prev,
-          title: metadata.videoTitle,
-        };
-      });
+      if (youtubePlayerConfig.currentlyPlaying) {
+        const metadata = await getYoutubeVideoTitle(
+          youtubePlayerConfig.currentlyPlaying?.url
+        );
+        setYoutubePlayerConfig((prev) => {
+          return {
+            ...prev,
+            title: metadata.videoTitle,
+          };
+        });
+      }
     };
     getMetaData();
-  }, [youtubePlayerConfig.videoId]);
+  }, []);
   const youtubePlayerStyle = {
     border: "15px",
     overflow: "hidden",
@@ -53,11 +70,13 @@ export default function Player() {
   };
 
   const handleOnPlay = () => {
-    if (playerState.isPlaying) {
-      socket?.pauseVideo();
-    } else {
-      socket?.playVideo();
-    }
+    console.log("Playing On Click");
+    socket?.playVideo();
+  };
+
+  const handleOnPause = () => {
+    console.log("Pausing On Click");
+    socket?.pauseVideo();
   };
 
   return (
@@ -78,13 +97,13 @@ export default function Player() {
               }}
             ></div>
           ) : null}
-          {youtubePlayerConfig.videoId === "" ? (
+          {!youtubePlayerConfig.currentlyPlaying ? (
             <img src="/no-videos.jpg" width={"90%"} height={"auto"} />
           ) : (
             <ReactPlayer
               width={"90%"}
               height={"auto"}
-              url={`https://www.youtube.com/watch?v=${youtubePlayerConfig.videoId}`}
+              url={youtubePlayerConfig.currentlyPlaying?.url}
               controls={false}
               style={youtubePlayerStyle}
               config={{
@@ -93,6 +112,7 @@ export default function Player() {
                 },
               }}
               onPlay={handleOnPlay}
+              onPause={handleOnPause}
               playing={playerState.isPlaying}
             />
           )}
@@ -100,8 +120,27 @@ export default function Player() {
         <div className="flex items-center space-x-2 mt-2">
           <UserAvatar username="ST" url={user.avatarUrl} />
           <h2 className="text-xl font-semibold text-white">
-            {youtubePlayerConfig.title}
+            {youtubePlayerConfig.currentlyPlaying?.title}
           </h2>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className="flex gap-3"
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                  }}
+                >
+                  <span>Share</span>
+                  <Share2Icon size={18} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Click to Copy!</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <div className="flex items-center mt-2 space-x-2">
           {users.slice(0, 8).map((user) => {

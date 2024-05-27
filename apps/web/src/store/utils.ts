@@ -3,6 +3,7 @@ import { parseISOTime } from "../components/util";
 const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
 
 export async function getYoutubeVideoTitle(videoId: string) {
+  console.log("Fetching Metadata");
   const metadata = await fetch(
     `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`
   );
@@ -13,6 +14,7 @@ export async function getYoutubeVideoTitle(videoId: string) {
 }
 
 export async function getYoutubeVideoMetadata(videoId: string) {
+  console.log("Fetching Metadata");
   const metadata = await fetch(
     `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`
   );

@@ -1,13 +1,7 @@
 import { WebSocket as ws } from "ws";
 import { Client, SocketManager } from "./SocketManager";
 import { randomUUID } from "crypto";
-import {
-  CLIENT_JOINED,
-  CLIENT_LEAVED,
-  PAUSE,
-  PLAY,
-  VIDEO_QUEUE,
-} from "@repo/common/messages";
+import { PAUSE, PLAY } from "@repo/common/messages";
 import db from "@repo/db/src";
 import { getYoutubeVideoMetadata } from "./utils";
 

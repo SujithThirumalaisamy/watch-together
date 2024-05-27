@@ -1,4 +1,3 @@
-import { Button } from "@ui/components";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@ui/components/ui/dialog";
-import { Input } from "@ui/components/ui/input";
+  Input,
+  Button,
+} from "@ui/components";
 import { useState } from "react";
 import { useWebSocket } from "../providers/wsContext";
 

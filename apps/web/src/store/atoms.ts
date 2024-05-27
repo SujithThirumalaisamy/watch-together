@@ -44,17 +44,27 @@ export const clientAtom = atom<ClientAtom>({
   },
 });
 
-type PlayerAtom = { isPlaying: boolean; currentDuration: number };
+type PlayerAtom = {
+  currentlyPlaying: Video | null;
+  isPlaying: boolean;
+  currentDuration: number;
+};
 
 export const playerAtom = atom<PlayerAtom>({
   key: "player",
   default: {
+    currentlyPlaying: null,
     isPlaying: false,
     currentDuration: 0,
   },
 });
 
-type Video = {
+export type Video = {
+  duration: string;
+  id: string;
+  partyId: string;
+  thumbnailURL: string;
+  title: string;
   url: string;
 };
 

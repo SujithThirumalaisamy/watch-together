@@ -1,4 +1,3 @@
-import { Button } from "@ui/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,15 +6,34 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@ui/components/ui/dialog";
-import { Input } from "@ui/components/ui/input";
+  useToast,
+  Input,
+  Button,
+} from "@ui/components";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useWebSocket } from "../providers/wsContext";
+import { useUser } from "../providers/user-provider";
 
 export function JoinParty() {
   const [partyId, setPartyId] = useState("");
-  const socket = useWebSocket();
+  const ws = useWebSocket();
+  const user = useUser();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handlePartyJoin = () => {
+    if (!user) {
+      toast({
+        title: "UnAuthorized",
+        description: "Login to create a Party",
+        variant: "destructive",
+      });
+      navigate("/login");
+    } else {
+      ws?.joinParty(partyId);
+    }
+  };
 
   return (
     <Dialog>
@@ -43,7 +61,7 @@ export function JoinParty() {
             />
           </div>
         </div>
-        <DialogFooter onClick={() => socket?.joinPary(partyId)}>
+        <DialogFooter onClick={handlePartyJoin}>
           <Link to={"/party/" + partyId}>
             <Button
               variant={"outline"}

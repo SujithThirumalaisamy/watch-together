@@ -6,10 +6,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@ui/components/ui/dropdown-menu";
+} from "@ui/components";
 import { useUser } from "../providers/user-provider";
 import UserAvatar from "../party/user-avatar";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
 import { userAtom } from "../../store/atoms";
 

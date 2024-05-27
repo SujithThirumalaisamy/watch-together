@@ -97,11 +97,32 @@ export class PartyManager {
           const party = this.parties.find(({ id }) => id === message.partyId);
           if (!party) {
             return client.socket.send(
-              JSON.stringify({ type: PARTY_NOT_FOUND })
+              JSON.stringify({
+                type: PARTY_NOT_FOUND,
+                partyId: message.partyId,
+              })
             );
           }
           if (party.getHost().id === client.id) {
             SocketManager.getInstance().addClient(client, party.id);
+            const dbParty = await db.party.findFirst({
+              where: { id: party.id },
+              include: { videos: true },
+            });
+            if (!dbParty) return;
+            SocketManager.getInstance().broadcast(
+              party.id,
+              JSON.stringify({
+                type: VIDEO_QUEUE,
+                videos: dbParty.videos.map((video) => {
+                  return {
+                    ...video,
+                    duration: video.duration.toString(),
+                  };
+                }),
+              })
+            );
+            client.partyId = party.id;
             return client.socket.send(JSON.stringify({ type: IS_HOST }));
           }
           SocketManager.getInstance().addClient(client, party.id);
@@ -114,6 +135,22 @@ export class PartyManager {
               type: CURRENT,
               currentVideo: party.getCurrentVideo(),
               currentTimestamp: party.getCurrentTimestamp(),
+            })
+          );
+          const dbParty = await db.party.findFirst({
+            where: { id: party.id },
+            include: { videos: true },
+          });
+          if (!dbParty) return;
+          client.socket.send(
+            JSON.stringify({
+              type: VIDEO_QUEUE,
+              videos: dbParty.videos.map((video) => {
+                return {
+                  ...video,
+                  duration: video.duration.toString(),
+                };
+              }),
             })
           );
           break;
@@ -158,21 +195,23 @@ export class PartyManager {
           if (!party) {
             return client.socket.send(JSON.stringify({ type: NOT_IN_PARTY }));
           }
-          const updatedParty = await party
-            .addVideo(message.videoURL)
-            .catch(() => {
-              client.socket.send(JSON.stringify({ type: VIDEO_ALREADY_EXIST }));
-            });
-          if (updatedParty)
+          const dbParty = await party.addVideo(message.videoURL).catch((e) => {
+            client.socket.send(JSON.stringify({ type: VIDEO_ALREADY_EXIST }));
+          });
+          if (dbParty) {
             SocketManager.getInstance().broadcast(
               party.id,
               JSON.stringify({
                 type: VIDEO_QUEUE,
-                videos: updatedParty.videos.map((video) => {
-                  return { ...video, duration: video.duration.toString() };
+                videos: dbParty.videos.map((video) => {
+                  return {
+                    ...video,
+                    duration: video.duration.toString(),
+                  };
                 }),
               })
             );
+          }
           break;
         }
 
@@ -202,7 +241,6 @@ export class PartyManager {
             return client.socket.send(
               JSON.stringify({
                 type: NEXT_VIDEO,
-                videoURL: party.getNextVideo(),
               })
             );
           } catch (e) {
@@ -217,7 +255,10 @@ export class PartyManager {
           );
           if (!party) {
             return client.socket.send(
-              JSON.stringify({ type: PARTY_NOT_FOUND })
+              JSON.stringify({
+                type: PARTY_NOT_FOUND,
+                partyId: message.partyId,
+              })
             );
           }
           party.setCurrentTimestamp(message.timeStamp);

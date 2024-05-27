@@ -1,12 +1,16 @@
 import {
   ADD_VIDEO,
+  CLIENT_JOINED,
+  CLIENT_LEAVED,
   CURRENT,
   GET_NEXT_VIDEO,
   INIT_PARTY,
   IS_HOST,
   JOIN_PARTY,
   LEAVE_PARTY,
+  NEXT_VIDEO,
   PARTY_CREATED,
+  PARTY_NOT_FOUND,
   PAUSE,
   PLAY,
   REMOVE_VIDEO,
@@ -17,9 +21,14 @@ import {
 import { createContext, useContext, useEffect, useState } from "react";
 import { useUser } from "./user-provider";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@ui/components/ui/use-toast";
+import { useToast } from "@ui/components";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import { clientAtom, playerAtom, videoQueueAtom } from "../../store/atoms";
+import {
+  Video,
+  clientAtom,
+  playerAtom,
+  videoQueueAtom,
+} from "../../store/atoms";
 
 type WebSocketContextType = {
   socket: WebSocket;
@@ -53,32 +62,56 @@ export const WebSocketProvider = ({
     socket?.send(
       JSON.stringify({ type: INIT_PARTY, partyTitle, partyDescription })
     );
-    console.log("sent");
+    toast({
+      title: "Party Created!",
+      description: partyTitle,
+    });
   }
 
   function joinParty(partyId: string) {
     socket?.send(JSON.stringify({ type: JOIN_PARTY, partyId }));
+    toast({
+      title: "Joined Party!",
+      description: partyId,
+    });
   }
 
   function leaveParty() {
     socket?.send(JSON.stringify({ type: LEAVE_PARTY }));
+    toast({
+      title: "Left Party!",
+    });
   }
 
   function playVideo() {
     socket?.send(JSON.stringify({ type: PLAY }));
+    toast({
+      title: "Playing Now!",
+      description: playerState.currentlyPlaying?.title,
+    });
   }
 
   function pauseVideo() {
     socket?.send(JSON.stringify({ type: PAUSE }));
+    toast({
+      description: "Paused!",
+    });
   }
 
   function addVideo(videoURL: string) {
-    setVideoQueue((prev) => [...prev, { url: videoURL }]);
+    toast({
+      title: "Video Added to Queue!",
+      description: videoURL,
+    });
     socket?.send(JSON.stringify({ type: ADD_VIDEO, videoURL }));
   }
 
-  function removeVideo(videoId: string) {
-    socket?.send(JSON.stringify({ type: REMOVE_VIDEO, videoId }));
+  function removeVideo(videoURL: string) {
+    toast({
+      title: "Video Removed from Queue!",
+      description: videoURL,
+    });
+    socket?.send(JSON.stringify({ type: REMOVE_VIDEO, videoURL }));
   }
 
   function getNextVideo() {
@@ -116,15 +149,44 @@ export const WebSocketProvider = ({
           break;
         }
         case PLAY: {
+          toast({
+            title: "Playing Now!",
+            description: playerState.currentlyPlaying?.title,
+          });
           setPlayerState((prev) => ({ ...prev, isPlaying: true }));
           break;
         }
+        case PAUSE: {
+          toast({
+            description: "Paused!",
+          });
+          setPlayerState((prev) => ({ ...prev, isPlaying: false }));
+          break;
+        }
+        case SEEK: {
+          setPlayerState((prev) => ({
+            ...prev,
+            currentDuration: message.timeStamp,
+          }));
+          break;
+        }
         case CURRENT: {
-          console.log(message);
+          setPlayerState((prev) => ({
+            ...prev,
+            currentlyPlaying: message.currentVideo,
+            currentDuration: message.currentTimestamp,
+          }));
           break;
         }
         case VIDEO_QUEUE: {
           setVideoQueue(message.videos);
+          if (!playerState.currentlyPlaying) {
+            setPlayerState((prev) => ({
+              ...prev,
+              currentDuration: 0,
+              currentlyPlaying: message.videos[0],
+            }));
+          }
           break;
         }
         case VIDEO_ALREADY_EXIST: {
@@ -136,6 +198,43 @@ export const WebSocketProvider = ({
         case IS_HOST: {
           setHost({ isHost: true });
           break;
+        }
+        case CLIENT_JOINED: {
+          toast({
+            title: "Viewer Joined!",
+            description: message.clientId,
+          });
+          break;
+        }
+        case CLIENT_LEAVED: {
+          toast({
+            title: "Viewer Left!",
+            description: message.clientId,
+          });
+          break;
+        }
+        case PARTY_NOT_FOUND: {
+          toast({
+            title: "Party Not Found!",
+            description: "Unable to find a party",
+            variant: "destructive",
+          });
+          break;
+        }
+        case NEXT_VIDEO: {
+          let nextVideo: Video;
+          setVideoQueue((prev) => {
+            const [first, ...rest] = prev;
+            nextVideo = first;
+            return rest;
+          });
+          setPlayerState(() => {
+            return {
+              currentDuration: 0,
+              isPlaying: true,
+              currentlyPlaying: nextVideo,
+            };
+          });
         }
       }
     };

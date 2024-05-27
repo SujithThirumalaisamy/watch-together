@@ -1,4 +1,3 @@
-import { Button } from "@ui/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,18 +6,34 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@ui/components/ui/dialog";
-import { Input } from "@ui/components/ui/input";
+  useToast,
+  Input,
+  Button,
+} from "@ui/components";
 import { useState } from "react";
 import { useWebSocket } from "../providers/wsContext";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../providers/user-provider";
 
 export function CreateParty() {
   const [partyTitle, setpartyTitle] = useState("");
   const [partyDesc, setpartyDesc] = useState("");
   const ws = useWebSocket();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const user = useUser();
+
   function handleCreateParty() {
-    ws?.createParty(partyTitle, partyDesc);
-    console.log("Party Created!");
+    if (!user) {
+      toast({
+        title: "UnAuthorized",
+        description: "Login to create a Party",
+        variant: "destructive",
+      });
+      navigate("/login");
+    } else {
+      ws?.createParty(partyTitle, partyDesc);
+    }
   }
 
   return (

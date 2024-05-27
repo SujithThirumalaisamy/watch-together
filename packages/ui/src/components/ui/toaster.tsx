@@ -5,11 +5,11 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@ui/components/ui/toast"
-import { useToast } from "@ui/components/ui/use-toast"
+  useToast,
+} from "@ui/components";
 
 export function Toaster() {
-  const { toasts } = useToast()
+  const { toasts } = useToast();
 
   return (
     <ToastProvider>
@@ -25,9 +25,9 @@ export function Toaster() {
             {action}
             <ToastClose />
           </Toast>
-        )
+        );
       })}
       <ToastViewport />
     </ToastProvider>
-  )
+  );
 }
