@@ -2,12 +2,18 @@ import { useEffect, useState } from "react";
 import ListIcon from "../icons/list-icon";
 import TrashIcon from "../icons/trash-icon";
 import { getYoutubeVideoMetadata } from "../../store/utils";
+import { useWebSocket } from "../providers/wsContext";
+import { useRecoilValue } from "recoil";
+import { clientAtom } from "../../store/atoms";
 
-export default function VideoCard({ url }: { url: string }) {
+export default function VideoCard({ url, id }: { url: string; id: string }) {
   const videoId = new URL(url).searchParams.get("v");
   const [thumbnail, setThumbnail] = useState("");
   const [title, setTitle] = useState("");
   const [duration, setDuration] = useState("00:00");
+  const ws = useWebSocket();
+  const client = useRecoilValue(clientAtom);
+
   useEffect(() => {
     const getMetadata = async () => {
       if (!videoId) return;
@@ -18,10 +24,10 @@ export default function VideoCard({ url }: { url: string }) {
     };
     getMetadata();
   }, [videoId]);
+
   return (
     <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg space-x-2 w-80">
       <div className="flex items-center">
-        {/* <div>{JSON.stringify(metadata)}</div> */}
         {thumbnail ? (
           <img
             style={{ aspectRatio: "16/9" }}
@@ -36,10 +42,14 @@ export default function VideoCard({ url }: { url: string }) {
           <p className="text-gray-400 text-xs">{duration}</p>
         </div>
       </div>
-      <div className="flex space-x-2">
-        <ListIcon className="text-white h-4 w-4 cursor-grab" />
-        <TrashIcon className="text-white h-4 w-4 cursor-pointer" />
-      </div>
+      {client.isHost ? (
+        <div className="flex space-x-2">
+          <ListIcon className="text-white h-4 w-4 cursor-grab" />
+          <span onClick={() => ws?.removeVideo(id)}>
+            <TrashIcon className="text-white h-4 w-4 cursor-pointer" />
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }

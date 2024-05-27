@@ -106,12 +106,12 @@ export const WebSocketProvider = ({
     socket?.send(JSON.stringify({ type: ADD_VIDEO, videoURL }));
   }
 
-  function removeVideo(videoURL: string) {
+  function removeVideo(videoId: string) {
     toast({
       title: "Video Removed from Queue!",
-      description: videoURL,
+      description: videoId,
     });
-    socket?.send(JSON.stringify({ type: REMOVE_VIDEO, videoURL }));
+    socket?.send(JSON.stringify({ type: REMOVE_VIDEO, videoId }));
   }
 
   function getNextVideo() {

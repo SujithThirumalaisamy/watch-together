@@ -82,13 +82,16 @@ export class Party {
     return this.host;
   }
 
-  removeVideo(video: string) {
-    if (this.videos.includes(video)) {
+  async removeVideo(videoId: string) {
+    try {
+      const video = await db.video.delete({ where: { id: videoId } });
       this.videos = this.videos.filter((v: string) => {
-        return v !== video;
+        return v !== video.url;
       });
-    } else {
-      throw new Error("Video Already Exists");
+      const newQueue = await db.video.findMany({ where: { partyId: this.id } });
+      return newQueue;
+    } catch (e) {
+      throw new Error("Video Does'nt Exists");
     }
   }
 

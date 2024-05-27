@@ -223,7 +223,11 @@ export class PartyManager {
             return client.socket.send(JSON.stringify({ type: NOT_IN_PARTY }));
           }
           try {
-            party.removeVideo(message.videoURL);
+            const newQueue = await party.removeVideo(message.videoId);
+            return SocketManager.getInstance().broadcast(
+              party.id,
+              JSON.stringify({ type: VIDEO_QUEUE, videos: newQueue })
+            );
           } catch (e) {
             client.socket.send(JSON.stringify({ type: VIDEO_DOES_NOT_EXIST }));
           }
