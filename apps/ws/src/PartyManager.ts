@@ -4,6 +4,8 @@ import { WebSocket as ws } from "ws";
 import {
   ADD_VIDEO,
   ALREADY_IN_PARTY,
+  CLIENT_JOINED,
+  CLIENT_LEAVED,
   CURRENT,
   GET_NEXT_VIDEO,
   INIT_PARTY,
@@ -20,6 +22,7 @@ import {
   SEEK,
   VIDEO_ALREADY_EXIST,
   VIDEO_DOES_NOT_EXIST,
+  VIDEO_QUEUE,
 } from "@repo/common/messages";
 import db from "@repo/db/src";
 export class PartyManager {
@@ -84,9 +87,9 @@ export class PartyManager {
             });
           break;
         }
+
         case JOIN_PARTY: {
           if (client.partyId) {
-            console.log("already in party");
             return client.socket.send(
               JSON.stringify({ type: ALREADY_IN_PARTY })
             );
@@ -102,16 +105,11 @@ export class PartyManager {
             return client.socket.send(JSON.stringify({ type: IS_HOST }));
           }
           SocketManager.getInstance().addClient(client, party.id);
-          db.partyClient
-            .update({
-              where: { id: client.id },
-              data: { partyId: party.id },
-            })
-            .then((data) => {
-              console.log(data + "client add");
-            });
           SocketManager.getInstance().broadcast(
             party.id,
+            JSON.stringify({ type: CLIENT_JOINED, clientId: client.id })
+          );
+          client.socket.send(
             JSON.stringify({
               type: CURRENT,
               currentVideo: party.getCurrentVideo(),
@@ -120,14 +118,21 @@ export class PartyManager {
           );
           break;
         }
+
         case LEAVE_PARTY: {
           const party = this.parties.find(
             (party) => party.id === client.partyId
           );
           SocketManager.getInstance().removeclient(client);
-          party?.removeClient(client.socket);
+          if (!party) return;
+          SocketManager.getInstance().broadcast(
+            party.id,
+            JSON.stringify({ type: CLIENT_LEAVED, clientId: client.id })
+          );
+          party.removeClient(client.socket);
           break;
         }
+
         case PLAY: {
           const party = this.parties.find(
             (party) => party.id === client.partyId
@@ -136,6 +141,7 @@ export class PartyManager {
           party.play(client, message.timeStamp);
           break;
         }
+
         case PAUSE: {
           const party = this.parties.find(
             (party) => party.id === client.partyId
@@ -144,6 +150,7 @@ export class PartyManager {
           party.pause();
           break;
         }
+
         case ADD_VIDEO: {
           const party = this.parties.find(
             (party) => party.id === client.partyId
@@ -151,12 +158,24 @@ export class PartyManager {
           if (!party) {
             return client.socket.send(JSON.stringify({ type: NOT_IN_PARTY }));
           }
-          party.addVideo(message.videoURL).catch((e) => {
-            client.socket.send(JSON.stringify({ type: VIDEO_ALREADY_EXIST }));
-          });
-
+          const updatedParty = await party
+            .addVideo(message.videoURL)
+            .catch(() => {
+              client.socket.send(JSON.stringify({ type: VIDEO_ALREADY_EXIST }));
+            });
+          if (updatedParty)
+            SocketManager.getInstance().broadcast(
+              party.id,
+              JSON.stringify({
+                type: VIDEO_QUEUE,
+                videos: updatedParty.videos.map((video) => {
+                  return { ...video, duration: video.duration.toString() };
+                }),
+              })
+            );
           break;
         }
+
         case REMOVE_VIDEO: {
           const party = this.parties.find(
             (party) => party.id === client.partyId
@@ -171,6 +190,7 @@ export class PartyManager {
           }
           break;
         }
+
         case GET_NEXT_VIDEO: {
           const party = this.parties.find(
             (party) => party.id === client.partyId

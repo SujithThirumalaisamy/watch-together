@@ -30,17 +30,16 @@ export class Party {
 
   addClient(client: Client) {
     this.clients.push(client);
-    SocketManager.getInstance().broadcast(
-      this.id,
-      JSON.stringify({ type: CLIENT_JOINED, clientId: client.id })
-    );
-    client.socket.emit("message", this.currentVideo);
+    client.socket.send(JSON.stringify(this.currentVideo));
+    db.partyClient.update({
+      where: { id: client.id },
+      data: { partyId: this.id },
+    });
   }
 
   removeClient(socket: ws) {
     const client = this.clients.find((client) => client.socket === socket);
     if (!client) {
-      console.error("client not found?");
       return;
     }
     this.clients = this.clients.filter((client) => client.socket !== socket);
@@ -48,11 +47,6 @@ export class Party {
       where: { id: client.id },
       data: { partyId: null },
     });
-    SocketManager.getInstance().removeclient(client);
-    SocketManager.getInstance().broadcast(
-      this.id,
-      JSON.stringify({ type: CLIENT_LEAVED, clientId: client.id })
-    );
   }
 
   async addVideo(video: string) {
@@ -76,16 +70,7 @@ export class Party {
         include: { videos: true },
       });
       this.videos.push(video);
-      console.log(party.videos);
-      SocketManager.getInstance().broadcast(
-        this.id,
-        JSON.stringify({
-          type: VIDEO_QUEUE,
-          videos: party.videos.map((video) => {
-            return { ...video, duration: video.duration.toString() };
-          }),
-        })
-      );
+      return party;
     } else {
       throw new Error("Video Already Exists");
     }
