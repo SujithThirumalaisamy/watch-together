@@ -3,6 +3,7 @@ import {
   CURRENT,
   GET_NEXT_VIDEO,
   INIT_PARTY,
+  IS_HOST,
   JOIN_PARTY,
   LEAVE_PARTY,
   PARTY_CREATED,
@@ -10,6 +11,7 @@ import {
   PLAY,
   REMOVE_VIDEO,
   SEEK,
+  VIDEO_ALREADY_EXIST,
   VIDEO_QUEUE,
 } from "@repo/common/messages";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -22,7 +24,7 @@ import { clientAtom, playerAtom, videoQueueAtom } from "../../store/atoms";
 type WebSocketContextType = {
   socket: WebSocket;
   createParty: CallableFunction;
-  joinPary: CallableFunction;
+  joinParty: CallableFunction;
   leaveParty: CallableFunction;
   playVideo: CallableFunction;
   pauseVideo: CallableFunction;
@@ -54,7 +56,7 @@ export const WebSocketProvider = ({
     console.log("sent");
   }
 
-  function joinPary(partyId: string) {
+  function joinParty(partyId: string) {
     socket?.send(JSON.stringify({ type: JOIN_PARTY, partyId }));
   }
 
@@ -122,7 +124,17 @@ export const WebSocketProvider = ({
           break;
         }
         case VIDEO_QUEUE: {
-          console.log(message);
+          setVideoQueue(message.videos);
+          break;
+        }
+        case VIDEO_ALREADY_EXIST: {
+          setVideoQueue((prev) => {
+            return prev.slice(0, -1);
+          });
+          break;
+        }
+        case IS_HOST: {
+          setHost({ isHost: true });
           break;
         }
       }
@@ -143,7 +155,7 @@ export const WebSocketProvider = ({
         value={{
           socket,
           createParty,
-          joinPary,
+          joinParty,
           leaveParty,
           playVideo,
           pauseVideo,

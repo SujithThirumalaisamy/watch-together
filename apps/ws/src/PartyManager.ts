@@ -7,6 +7,7 @@ import {
   CURRENT,
   GET_NEXT_VIDEO,
   INIT_PARTY,
+  IS_HOST,
   JOIN_PARTY,
   LEAVE_PARTY,
   NEXT_VIDEO,
@@ -19,7 +20,6 @@ import {
   SEEK,
   VIDEO_ALREADY_EXIST,
   VIDEO_DOES_NOT_EXIST,
-  VIDEO_QUEUE,
 } from "@repo/common/messages";
 import db from "@repo/db/src";
 export class PartyManager {
@@ -60,23 +60,33 @@ export class PartyManager {
               JSON.stringify({ type: ALREADY_IN_PARTY })
             );
           }
-          const party = new Party(client, {
-            title: message.partyTitle,
-            description: message.partyDescription,
-            currentVideo: "",
-          });
-          console.log(message);
-          this.parties.push(party);
-          client.partyId = party.id;
-          SocketManager.getInstance().addClient(client, party.id);
-          SocketManager.getInstance().broadcast(
-            party.id,
-            JSON.stringify({ type: PARTY_CREATED, partyId: party.id })
-          );
+          const party = new Party(client);
+          db.party
+            .create({
+              data: {
+                description: message.partyDescription,
+                hostId: client.id,
+                title: message.partyTitle,
+              },
+            })
+            .then((data) => {
+              party.id = data.id;
+              this.parties.push(party);
+              client.partyId = party.id;
+              SocketManager.getInstance().addClient(client, party.id);
+              SocketManager.getInstance().broadcast(
+                party.id,
+                JSON.stringify({ type: PARTY_CREATED, partyId: party.id })
+              );
+            })
+            .catch(() => {
+              client.socket.send(JSON.stringify({ type: "internal_error" }));
+            });
           break;
         }
         case JOIN_PARTY: {
           if (client.partyId) {
+            console.log("already in party");
             return client.socket.send(
               JSON.stringify({ type: ALREADY_IN_PARTY })
             );
@@ -87,7 +97,19 @@ export class PartyManager {
               JSON.stringify({ type: PARTY_NOT_FOUND })
             );
           }
+          if (party.getHost().id === client.id) {
+            SocketManager.getInstance().addClient(client, party.id);
+            return client.socket.send(JSON.stringify({ type: IS_HOST }));
+          }
           SocketManager.getInstance().addClient(client, party.id);
+          db.partyClient
+            .update({
+              where: { id: client.id },
+              data: { partyId: party.id },
+            })
+            .then((data) => {
+              console.log(data + "client add");
+            });
           SocketManager.getInstance().broadcast(
             party.id,
             JSON.stringify({
@@ -129,18 +151,10 @@ export class PartyManager {
           if (!party) {
             return client.socket.send(JSON.stringify({ type: NOT_IN_PARTY }));
           }
-          try {
-            party.addVideo(message.videoURL);
-          } catch (e) {
+          party.addVideo(message.videoURL).catch((e) => {
             client.socket.send(JSON.stringify({ type: VIDEO_ALREADY_EXIST }));
-          }
-          SocketManager.getInstance().broadcast(
-            party.id,
-            JSON.stringify({
-              type: VIDEO_QUEUE,
-              videoQueue: party.getVideoQueue(),
-            })
-          );
+          });
+
           break;
         }
         case REMOVE_VIDEO: {

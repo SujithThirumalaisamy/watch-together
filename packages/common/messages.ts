@@ -18,3 +18,4 @@ export const GET_NEXT_VIDEO = "get_next_video";
 export const NEXT_VIDEO = "next_video";
 export const REMOVE_VIDEO = "remove_video";
 export const VIDEO_QUEUE = "video_queue";
+export const IS_HOST = "IS_HOST";

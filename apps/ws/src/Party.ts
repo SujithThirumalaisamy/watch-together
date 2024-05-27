@@ -6,9 +6,9 @@ import {
   CLIENT_LEAVED,
   PAUSE,
   PLAY,
+  VIDEO_QUEUE,
 } from "@repo/common/messages";
 import db from "@repo/db/src";
-import { Party as PartyType } from "@prisma/client";
 import { getYoutubeVideoMetadata } from "./utils";
 
 export class Party {
@@ -19,18 +19,7 @@ export class Party {
   private currentVideo: string | null;
   private currentTimestamp: number;
 
-  constructor(host: Client, partyMetaData: Omit<PartyType, "id" | "hostId">) {
-    db.party
-      .create({
-        data: {
-          description: partyMetaData.description,
-          hostId: host.id,
-          title: partyMetaData.title,
-        },
-      })
-      .then((data) => {
-        console.log(data);
-      });
+  constructor(host: Client) {
     this.id = randomUUID();
     this.host = host;
     this.clients = [];
@@ -41,11 +30,6 @@ export class Party {
 
   addClient(client: Client) {
     this.clients.push(client);
-    // [Feature]: Add logic to make Host User as host when Rejoin
-    db.partyClient.update({
-      where: { id: client.id },
-      data: { partyId: this.id },
-    });
     SocketManager.getInstance().broadcast(
       this.id,
       JSON.stringify({ type: CLIENT_JOINED, clientId: client.id })
@@ -72,13 +56,12 @@ export class Party {
   }
 
   async addVideo(video: string) {
-    console.log(video);
     const videoId = new URL(video).searchParams.get("v");
     if (!videoId) return;
     const { duration, thumbnailURL, title } =
       await getYoutubeVideoMetadata(videoId);
     if (!this.videos.includes(video)) {
-      await db.party.update({
+      const party = await db.party.update({
         where: { id: this.id },
         data: {
           videos: {
@@ -90,15 +73,17 @@ export class Party {
             },
           },
         },
+        include: { videos: true },
       });
       this.videos.push(video);
+      console.log(party.videos);
       SocketManager.getInstance().broadcast(
         this.id,
         JSON.stringify({
-          duration: parseInt(duration),
-          title,
-          url: video,
-          thumbnailURL,
+          type: VIDEO_QUEUE,
+          videos: party.videos.map((video) => {
+            return { ...video, duration: video.duration.toString() };
+          }),
         })
       );
     } else {
@@ -112,6 +97,10 @@ export class Party {
 
   getVideoQueue() {
     return this.videos;
+  }
+
+  getHost() {
+    return this.host;
   }
 
   removeVideo(video: string) {
