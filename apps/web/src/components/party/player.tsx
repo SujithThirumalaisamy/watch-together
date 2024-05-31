@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { LegacyRef, useEffect, useRef, useState } from "react";
 import UserAvatar from "./user-avatar";
 import { useUser } from "../providers/user-provider";
 import ReactPlayer from "react-player";
@@ -40,6 +40,8 @@ export default function Player() {
   const { isHost } = useRecoilValue(clientAtom);
   const socket = useWebSocket();
   const navigate = useNavigate();
+  const playerRef = useRef<ReactPlayer>(null);
+  const seekChange = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -63,6 +65,7 @@ export default function Player() {
     };
     getMetaData();
   }, []);
+
   const youtubePlayerStyle = {
     border: "15px",
     overflow: "hidden",
@@ -70,13 +73,19 @@ export default function Player() {
   };
 
   const handleOnPlay = () => {
-    console.log("Playing On Click");
+    if (playerRef && playerRef.current) {
+      console.log(playerRef.current.getCurrentTime());
+    }
     socket?.playVideo();
   };
 
   const handleOnPause = () => {
-    console.log("Pausing On Click");
     socket?.pauseVideo();
+  };
+
+  const handleOnSeek = (duration: number) => {
+    // socket?.pauseVideo(duration);
+    console.log(duration);
   };
 
   return (
@@ -101,10 +110,11 @@ export default function Player() {
             <img src="/no-videos.jpg" width={"90%"} height={"auto"} />
           ) : (
             <ReactPlayer
+              ref={playerRef}
               width={"90%"}
               height={"auto"}
               url={youtubePlayerConfig.currentlyPlaying?.url}
-              controls={false}
+              controls={isHost}
               style={youtubePlayerStyle}
               config={{
                 youtube: {
@@ -113,6 +123,7 @@ export default function Player() {
               }}
               onPlay={handleOnPlay}
               onPause={handleOnPause}
+              onSeek={handleOnSeek}
               playing={playerState.isPlaying}
             />
           )}
